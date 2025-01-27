@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, make_response, jsonify
+from flask import Flask, request, render_template, make_response
 import os
 import subprocess
 
@@ -56,18 +56,17 @@ def upload_file():
         # Limpieza de archivos temporales
         if os.path.exists(input_file_path):
             os.remove(input_file_path)
+        if os.path.exists(output_file_path):
+            os.remove(output_file_path)
 
-@app.route('/download/<file_name>')
-def download_file(file_name):
-    # Ruta del archivo de salida
-    file_path = f"temp/{file_name}"
+@app.route('/download', methods=['POST'])
+def download_file():
+    # Obtener subtítulos desde la solicitud
+    subtitulos = request.form['subtitulos']
+    file_name = request.form['file_name']
 
-    # Leer el archivo y devolverlo como descarga
-    with open(file_path, "rb") as f:
-        srt_data = f.read()
-
-    # Crear una respuesta para descargar el archivo
-    response = make_response(srt_data)
+    # Crear respuesta para descargar el archivo
+    response = make_response(subtitulos)
     response.headers['Content-Disposition'] = f'attachment; filename={file_name}'
     response.headers['Content-Type'] = 'text/plain'
 
