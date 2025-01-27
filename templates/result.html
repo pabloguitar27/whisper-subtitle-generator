@@ -9,8 +9,10 @@
     <h1>Subtítulos Generados</h1>
     <pre>{{ subtitulos }}</pre>
     <br>
-    <a href="/download/{{ file_name }}" download>
-        <button>Descargar Subtítulos</button>
-    </a>
+    <form action="/download" method="post">
+        <input type="hidden" name="subtitulos" value="{{ subtitulos }}">
+        <input type="hidden" name="file_name" value="{{ file_name }}">
+        <button type="submit">Descargar Subtítulos</button>
+    </form>
 </body>
 </html>
