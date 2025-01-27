@@ -1,8 +1,12 @@
-from flask import Flask, request, render_template, send_file
+from flask import Flask, request, render_template, send_from_directory
 import os
 import subprocess
 
 app = Flask(__name__)
+
+# Ruta para servir archivos generados (salida pública)
+OUTPUT_FOLDER = "output"
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 @app.route('/')
 def index():
@@ -21,20 +25,18 @@ def upload_file():
     file.save(input_file_path)
 
     # Ruta de salida para el archivo .srt
-    output_dir = "output"
-    os.makedirs(output_dir, exist_ok=True)
     output_file_name = os.path.splitext(file.filename)[0] + ".srt"
-    output_file_path = os.path.join(output_dir, output_file_name)
+    output_file_path = os.path.join(OUTPUT_FOLDER, output_file_name)
 
     try:
         # Ejecutar Whisper utilizando subprocess.run
         subprocess.run(
             [
                 "python", "-m", "whisper", input_file_path,
-                "--model", "medium",  # Cambia a otro modelo si es necesario
-                "--language", "en",  # Ajusta el idioma si es necesario
+                "--model", "medium",
+                "--language", "en",
                 "--output_format", "srt",
-                "--output_dir", output_dir,
+                "--output_dir", OUTPUT_FOLDER,
                 "--max_line_width", "30",
                 "--max_words_per_line", "7",
                 "--max_line_count", "1",
@@ -59,14 +61,9 @@ def upload_file():
 
 @app.route('/download/<filename>')
 def download_file(filename):
-    # Ruta completa del archivo generado
-    file_path = os.path.join("output", filename)
-    if os.path.exists(file_path):
-        return send_file(file_path, as_attachment=True)
-    else:
-        return "Archivo no encontrado.", 404
+    # Servir el archivo desde la carpeta pública de salida
+    return send_from_directory(OUTPUT_FOLDER, filename, as_attachment=True)
 
 if __name__ == '__main__':
-    # Usar el puerto asignado dinámicamente por Render
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
