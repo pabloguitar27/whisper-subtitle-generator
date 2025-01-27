@@ -1,7 +1,6 @@
-from flask import Flask, request, render_template, send_file, make_response
+from flask import Flask, request, render_template, make_response
 import os
 import subprocess
-from io import BytesIO
 
 app = Flask(__name__)
 
@@ -44,7 +43,7 @@ def upload_file():
             check=True
         )
 
-        # Leer el archivo generado y devolverlo como respuesta
+        # Leer el archivo generado y devolverlo como descarga
         with open(output_file_path, "rb") as f:
             srt_data = f.read()
 
