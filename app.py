@@ -40,7 +40,7 @@ def upload_file():
                 "--max_line_count", "1",
                 "--no_speech_threshold", "0.5",
                 "--logprob_threshold", "-1.0",
-                "--word_timestamps", "True"  # Necesario para limitar las líneas
+                "--word_timestamps", "True"
             ],
             check=True
         )
@@ -67,4 +67,6 @@ def download_file(filename):
         return "Archivo no encontrado.", 404
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    # Usar el puerto asignado dinámicamente por Render
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
