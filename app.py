@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, make_response
+from flask import Flask, request, render_template, make_response, jsonify
 import os
 import subprocess
 
@@ -43,16 +43,12 @@ def upload_file():
             check=True
         )
 
-        # Leer el archivo generado y devolverlo como descarga
-        with open(output_file_path, "rb") as f:
-            srt_data = f.read()
+        # Leer el contenido del archivo .srt generado
+        with open(output_file_path, "r", encoding="utf-8") as f:
+            subtitulos = f.read()
 
-        # Crear una respuesta para descargar el archivo directamente
-        response = make_response(srt_data)
-        response.headers['Content-Disposition'] = f'attachment; filename={output_file_name}'
-        response.headers['Content-Type'] = 'text/plain'
-
-        return response
+        # Mostrar los subtítulos en una página HTML
+        return render_template('result.html', subtitulos=subtitulos, file_name=output_file_name)
 
     except subprocess.CalledProcessError as e:
         return f"Hubo un error al procesar el archivo:\n{e}", 500
@@ -60,8 +56,22 @@ def upload_file():
         # Limpieza de archivos temporales
         if os.path.exists(input_file_path):
             os.remove(input_file_path)
-        if os.path.exists(output_file_path):
-            os.remove(output_file_path)
+
+@app.route('/download/<file_name>')
+def download_file(file_name):
+    # Ruta del archivo de salida
+    file_path = f"temp/{file_name}"
+
+    # Leer el archivo y devolverlo como descarga
+    with open(file_path, "rb") as f:
+        srt_data = f.read()
+
+    # Crear una respuesta para descargar el archivo
+    response = make_response(srt_data)
+    response.headers['Content-Disposition'] = f'attachment; filename={file_name}'
+    response.headers['Content-Type'] = 'text/plain'
+
+    return response
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
