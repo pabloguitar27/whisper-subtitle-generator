@@ -7,8 +7,9 @@
 </head>
 <body>
     <h1>Subtítulos Generados</h1>
-    <pre>{{ subtitulos }}</pre>
-    <br>
+    <div>
+        <pre>{{ subtitulos }}</pre>
+    </div>
     <form action="/download" method="post">
         <input type="hidden" name="subtitulos" value="{{ subtitulos }}">
         <input type="hidden" name="file_name" value="{{ file_name }}">
