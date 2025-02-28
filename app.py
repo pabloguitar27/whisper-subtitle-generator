@@ -25,8 +25,10 @@ def upload_file():
     output_file_path = f"temp/{output_file_name}"
 
     try:
-        # Ejecutar Whisper para generar subtítulos
-        subprocess.run(
+        print(f"Ejecutando Whisper en {input_file_path}...")  # Debug
+
+        # Ejecutar Whisper y capturar errores
+        result = subprocess.run(
             [
                 "python", "-m", "whisper", input_file_path,
                 "--model", "medium",
@@ -40,20 +42,33 @@ def upload_file():
                 "--logprob_threshold", "-1.0",
                 "--word_timestamps", "True"
             ],
-            check=True
+            check=True,
+            capture_output=True,
+            text=True
         )
+
+        print("Whisper output:", result.stdout)  # Debug
+        print("Whisper errors:", result.stderr)  # Debug
+
+        # Verificar si el archivo se generó
+        if not os.path.exists(output_file_path):
+            print(f"Error: Whisper no generó el archivo {output_file_path}")
+            return "Error: No se generó el archivo de subtítulos.", 500
 
         # Leer el contenido del archivo .srt generado
         with open(output_file_path, "r", encoding="utf-8") as f:
             subtitulos = f.read()
 
+        print("Subtítulos generados con éxito.")  # Debug
+
         # Mostrar los subtítulos en la página HTML
         return render_template('result.html', subtitulos=subtitulos, file_name=output_file_name)
 
     except subprocess.CalledProcessError as e:
-        return f"Hubo un error al procesar el archivo:\n{e}", 500
+        print(f"Error ejecutando Whisper: {e.stderr}")  # Debug
+        return f"Hubo un error al procesar el archivo:\n{e.stderr}", 500
     finally:
-        # Limpieza de archivos temporales
+        # Limpieza opcional de archivos temporales
         if os.path.exists(input_file_path):
             os.remove(input_file_path)
         if os.path.exists(output_file_path):
